@@ -1,0 +1,50 @@
+<!--
+  ~ Copyright (C) Schweizerische Bundesbahnen SBB, 2024.
+  -->
+
+<jqa:jqassistant-rules xmlns:jqa="http://www.buschmais.com/jqassistant/core/rule/schema/v1.3">
+
+    <constraint id="logging:use-logback">
+        <description>Ensures that Logback is used for logging.</description>
+        <cypher><![CDATA[
+              MATCH
+                (app:Application)-[:CONTAINS]->(type:Type)
+              WHERE NOT (
+                (type)-[:DECLARES]->()-[:OF_TYPE]->(:Type {fqn:"ch.qos.logback.classic.Logger"})
+                OR
+                (type)-[:DECLARES]->()-[:INVOKES]->()<-[:DECLARES]-(:Type {fqn:"org.slf4j.LoggerFactory"})
+              )
+              RETURN type.fqn AS InvalidType
+            ]]>
+        </cypher>
+    </constraint>
+
+    <constraint id="logging:only-logback">
+        <description>Ensure only Logback is used as the logging framework.</description>
+        <cypher><![CDATA[
+        MATCH (dep:Dependency)-[:DEPENDS_ON]->(artifact:Artifact)
+        WHERE artifact.groupId IN ['org.slf4j', 'log4j', 'commons-logging', 'java.util.logging']
+          AND NOT (artifact.groupId = 'org.slf4j' AND artifact.artifactId IN ['slf4j-api', 'jul-to-slf4j'])
+          AND artifact.artifactId <> 'logback-classic'
+        RETURN dep.fqn AS InvalidDependency, artifact.groupId AS GroupId, artifact.artifactId AS ArtifactId
+        ]]></cypher>
+    </constraint>
+
+    <constraint id="logging:deny-spring-boot-starter-log4j2">
+        <description>Deny usage of spring-boot-starter-log4j2</description>
+        <cypher><![CDATA[
+        MATCH (dep:Dependency)-[:DEPENDS_ON]->(artifact:Artifact)
+        WHERE artifact.groupId = 'org.springframework.boot'
+        AND artifact.artifactId = 'spring-boot-starter-log4j2'
+        AND artifact.version = '3.1.3'
+        RETURN dep.fqn AS InvalidDependency, artifact.groupId AS GroupId, artifact.artifactId AS ArtifactId, artifact.version AS Version
+    ]]></cypher>
+    </constraint>
+
+
+    <group id="default">
+        <includeConstraint refId="logging:use-logback"/>
+        <includeConstraint refId="logging:only-logback"/>
+        <includeConstraint refId="logging:deny-spring-boot-starter-log4j2"/>
+    </group>
+</jqa:jqassistant-rules>

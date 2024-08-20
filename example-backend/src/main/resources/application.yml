@@ -1,0 +1,44 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: jqassistant-example-app
+  profiles:
+    active: ${ENVIRONMENT:local}
+  jmx:
+    enabled: true
+
+security:
+  cors:
+    path-mappings: /**
+    allowed-methods: "*"
+    allowed-headers: "*"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info,health
+  info:
+    env:
+      enabled: true
+  endpoint:
+    health:
+      show-components: always
+      show-details: always
+      probes:
+        enabled: true
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+
+# this info may be accessed via actuator
+info:
+  app:
+    name: jqassistant-example
+#    version: @version@
+#    buildtime: @timestamp@
+    profile: ${spring.profiles.active}

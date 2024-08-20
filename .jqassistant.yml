@@ -1,0 +1,13 @@
+# documentation https://jqassistant.github.io/jqassistant/2.4.0/
+jqassistant:
+  scan:
+    reset: false
+  analyze:
+    report:
+      warn-on-severity: MINOR
+      fail-on-severity: MAJOR
+      properties:
+        junit.report.failureSeverity: MAJOR
+        junit.report.errorSeverity: MINOR
+  maven:
+    use-execution-root-as-project-root: true

@@ -1,0 +1,15 @@
+target
+.metadata
+.settings
+.classpath
+.project
+.idea
+*.iml
+.flattened-pom.xml
+
+**/*-personal.yaml
+**/*-personal.yml
+**/*-personal.properties
+**/*-personal-*.yml
+**/*-personal-*.yaml
+**/*-personal-*.properties
