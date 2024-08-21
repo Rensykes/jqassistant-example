@@ -6,6 +6,30 @@
         <includeConstraint refId="logging:*"/>
     </group>
 
+    <constraint id="logging:InvalidLoggingFrameworkDependency">
+        <description>Log4j and Commons Logging must not be used as dependencies.</description>
+        <cypher><![CDATA[
+            WITH
+              [
+                { group: "org.apache.logging.log4j", name: "log4j-api" },
+                { group: "commons-logging", name: "commons-logging" }
+              ] as unwantedDependencies
+            UNWIND
+              unwantedDependencies as unwantedDependency
+            MATCH
+              (:Maven:Project)-[:CREATES]->(artifact:Artifact),
+              shortestPath((artifact)-[:DEPENDS_ON*]->(invalidDependency:Artifact))
+            WHERE
+              invalidDependency.group = unwantedDependency.group
+              and invalidDependency.name = unwantedDependency.name
+            RETURN
+              artifact.fqn as Artifact, invalidDependency.fqn as InvalidDependency
+        ]]>
+        </cypher>
+        <report primaryColumn="Invocation"/>
+    </constraint>
+
+
     <constraint id="logging:Slf4jMustBeUsedForLogging">
         <requiresConcept refId="logging:Logger"/>
         <requiresConcept refId="logging:Slf4jLogger"/>
